@@ -15,7 +15,8 @@ $this->title = 'Welcome to YII2 - 注册';
         <div class="layui-form-item">
             <label class="layui-form-label">邮箱</label>
             <div class="layui-input-block">
-                <input type="text" name="email" ng-model="email" lay-verify="required|email" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+                <input list="mail_input_list" id="mail_input" type="text" name="email" ng-model="email" lay-verify="required|email" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+                <datalist id="mail_input_list"></datalist>
             </div>
         </div>
         <div class="layui-form-item">
@@ -32,7 +33,7 @@ $this->title = 'Welcome to YII2 - 注册';
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">密码框</label>
+            <label class="layui-form-label">密码</label>
             <div class="layui-input-block">
                 <input type="password" name="password" required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input">
             </div>
@@ -47,12 +48,14 @@ $this->title = 'Welcome to YII2 - 注册';
 </div>
 
 <script>
+    // 邮箱输入联想功能(邮箱对象，邮箱列表对象)
+    mail_input_list($("#mail_input"),$("#mail_input_list"));
     //Demo
     layui.use('form', function(){
 
     });
     var app = angular.module('registerPageApp', []);
-    app.controller('registerPageCtrl', function($scope,$http) {$scope.mail_button_disabled=true
+    app.controller('registerPageCtrl', function($scope,$http) {
         // 验证邮箱格式的方法
         $scope.validateMail = function(email)
         {

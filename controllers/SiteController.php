@@ -131,6 +131,44 @@ class SiteController extends Controller
             return \yii\helpers\Json::encode(array('code'=>5,'message'=>'注册失败','data'=>$e->getMessage() ));
         }
     }
+
+    /**
+     * 登录操作
+     * @author wusong
+     * @date 2017-12-05
+     * @return string
+     */
+    public function actionLogin_save()
+    {
+        if(!(Yii::$app->request->isPost))
+        {
+            return \yii\helpers\Json::encode(array('code'=>1,'message'=>'非法请求','date'=>array()));die;
+        }
+        $param = Yii::$app->request->post();
+        // 验证参数必填
+        if(Yii::$app->helper->param_validate($param,['email','password','luotest_response']))
+        {
+            return \yii\helpers\Json::encode(array('code'=>2,'message'=>'入参非法','data'=>[]));
+        }
+        // 验证人机验证的验证码
+        $luosimao_validate = \yii\helpers\Json::decode(Yii::$app->helper->luosimao_validate($param['luotest_response']));
+        if($luosimao_validate['code'] != 0)return \yii\helpers\Json::encode($luosimao_validate);
+        // 检测用户名和密码是否正确
+        $query = YUser::find()
+            ->asArray()
+            ->select(['id','email'])
+            ->where(['email'=>$param['email'],'password'=>md5($param['password'])]);
+        $res = $query->one();
+        if($res)
+        {
+            // 将用户信息保存到session
+            Yii::$app->session->set('userinfo',$res);
+            return \yii\helpers\Json::encode(array('code'=>0,'message'=>'登录成功','data'=>$res));
+        }else
+        {
+            return \yii\helpers\Json::encode(array('code'=>3,'message'=>'用户名或密码错误','data'=>[]));
+        }
+    }
     /**
      * Login action.
      *

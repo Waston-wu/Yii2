@@ -9,7 +9,7 @@ use app\assets\AppAsset;
 AppAsset::register($this);
 
 $session = Yii::$app->session;
-$userid = $session->has('userid') ? $session->get('userid') : '';
+$userinfo = $session->has('userinfo') ? $session->get('userinfo') : '';
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -24,6 +24,7 @@ $userid = $session->has('userid') ? $session->get('userid') : '';
     <?=Html::jsFile('@web/layui/layui.js')?>
     <?=Html::jsFile('@web/js/angular.js')?>
     <?=Html::jsFile('@web/js/jquery.min.js')?>
+    <?=Html::jsFile('@web/js/common.js')?>
     <script src="//captcha.luosimao.com/static/js/api.js"></script>
     <?php $this->head() ?>
     <style>
@@ -51,7 +52,7 @@ $userid = $session->has('userid') ? $session->get('userid') : '';
                 </dl>
             </li>
         </ul>
-        <?php if($userid == ''){?>
+        <?php if($userinfo == ''){?>
         <ul class="layui-nav layui-layout-right">
             <li class="layui-nav-item"><?= Html::a('登录',['site/login']) ?></li>
             <li class="layui-nav-item"><?= Html::a('注册',['site/register']) ?></li>
@@ -61,7 +62,7 @@ $userid = $session->has('userid') ? $session->get('userid') : '';
             <li class="layui-nav-item">
                 <a href="javascript:;">
                     <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
-                    贤心
+                    <?php echo $userinfo['email']?>
                 </a>
                 <dl class="layui-nav-child">
                     <dd><a href="">基本资料</a></dd>
