@@ -64,24 +64,34 @@ $this->title = 'Welcome to YII2 - 免费';
             // 表格数据
             $scope.free_table = $scope.table.render({
                 elem: '#free_table'
-                ,height: 5001
+                ,height: 500
                 ,url: 'index.php?r=site/get_free_goods_list' //数据接口
                 ,method: 'post'
                 ,page: true //开启分页
                 ,cols: [[ //表头
                     {field: 'goods_id', title: '商品id', sort: true, fixed: 'left', width:80,
                         templet: '<div><a href="{{d.goods_link}}" target="_blank" class="layui-table-link">{{d.goods_id}}</a></div>'}
-                    ,{field: 'goods_title', title: '标题', sort: true}
+                    ,{field: 'goods_title', title: '标题', sort: true, width:300}
                     ,{field: 'goods_plat', title: '平台', sort: true, width:80, align:'center'}
                     ,{field: 'goods_apply', title: '申请人数', sort: true, width:100, align:'center'}
                     ,{field: 'goods_left', title: '剩余份数', sort: true, width:100, align:'center'}
                     ,{field: 'goods_price', title: '商品价格', sort: true, width:100, align:'center'}
-                    ,{field: 'business_plat', title: '商家平台', sort: true}
+//                    ,{field: 'business_plat', title: '商家平台', sort: true}
                     ,{field: 'business_grade', title: '商家等级', sort: true}
                     ,{field: 'business_sale', title: '商家主营类目',sort: true}
                     ,{field: 'business_sock', title: '商家评分', sort: true, width:100, align:'center'}
-                    ,{field: 'create_time', title: '创建时间', sort: true}
-                    ,{field: 'update_time', title: '更新时间', sort: true}
+                    ,{field: 'create_time', title: '创建时间', sort: true, templet: function(d){
+                            return d.create_time.substr(0,16)
+                        }
+                    }
+                    ,{field: 'update_time', title: '更新时间', sort: true, templet: function(d){
+                            if(d.update_time == '0000-00-00 00:00:00'){
+                                return ''
+                            }else{
+                                return d.update_time.substr(0,16)
+                            }
+                        }
+                    }
                 ]]
             });
             // 排序
