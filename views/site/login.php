@@ -32,7 +32,7 @@ $this->title = 'Welcome to YII2 - 登录';
         <div class="layui-form-item">
             <label class="layui-form-label">验证码</label>
             <div class="layui-input-block">
-                <div class="l-captcha" data-site-key="<?php echo Yii::$app->params['luosimao_site_key']?>" style="width:100%;"></div>
+                <div class="l-captcha" data-site-key="<?php echo Yii::$app->params['luosimao_site_key']?>" data-width="100%;"></div>
             </div>
         </div>
         <div class="layui-form-item">

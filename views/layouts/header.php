@@ -15,15 +15,16 @@ $userinfo = $session->has('userinfo') ? $session->get('userinfo') : '';
 <!DOCTYPE html>
 <html lang="<?= Yii::$app->language ?>">
 <head>
+    <link href="favicon.ico" type="image/x-icon" rel="shortcut icon" />
     <meta charset="<?= Yii::$app->charset ?>">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?=Html::cssFile('@web/layui/css/layui.css')?>
+    <?=Html::jsFile('@web/js/jquery.min.js')?>
     <?=Html::jsFile('@web/layui/layui.js')?>
     <?=Html::jsFile('@web/js/angular.js')?>
-    <?=Html::jsFile('@web/js/jquery.min.js')?>
     <?=Html::jsFile('@web/js/common.js')?>
     <script src="//captcha.luosimao.com/static/js/api.js"></script>
     <?php $this->head() ?>
@@ -40,7 +41,7 @@ $userinfo = $session->has('userinfo') ? $session->get('userinfo') : '';
         <div class="layui-logo">layui 后台布局</div>
         <!-- 头部区域（可配合layui已有的水平导航） -->
         <ul class="layui-nav layui-layout-left">
-            <li class="layui-nav-item"><?= Html::a('控制台', ['site/login']) ?></li>
+            <li class="layui-nav-item"><a href="">控制台</a></li>
             <li class="layui-nav-item"><a href="">商品管理</a></li>
             <li class="layui-nav-item"><a href="">用户</a></li>
             <li class="layui-nav-item">
@@ -67,9 +68,9 @@ $userinfo = $session->has('userinfo') ? $session->get('userinfo') : '';
                 <dl class="layui-nav-child">
                     <dd><a href="">基本资料</a></dd>
                     <dd><a href="">安全设置</a></dd>
+                    <dd><?= Html::a('退出',['site/login_out']) ?></dd>
                 </dl>
             </li>
-            <li class="layui-nav-item"><a href="">退了</a></li>
         </ul>
         <?php }?>
     </div>
@@ -81,7 +82,7 @@ $userinfo = $session->has('userinfo') ? $session->get('userinfo') : '';
                 <li class="layui-nav-item">
                     <a class="" href="javascript:;">所有商品</a>
                     <dl class="layui-nav-child">
-                        <dd><a href="javascript:;">列表一</a></dd>
+                        <dd><?= Html::a('Just For Free',['site/free']) ?></dd>
                         <dd><a href="javascript:;">列表二</a></dd>
                         <dd><a href="javascript:;">列表三</a></dd>
                         <dd><a href="">超链接</a></dd>

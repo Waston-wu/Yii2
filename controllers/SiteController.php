@@ -3,6 +3,8 @@
 namespace app\controllers;
 
 use app\models\YUser;
+use app\models\YShiyong;
+use app\models\YUserLog;
 use Yii;
 use yii\db\Exception;
 use yii\filters\AccessControl;
@@ -14,6 +16,13 @@ use app\models\ContactForm;
 
 class SiteController extends Controller
 {
+    public function actionTest()
+    {
+        $user = YUser::findOne('1');
+        $user->deleted = 0;
+        $res = $user->save();
+        var_export($res);
+    }
     /**
      * @inheritdoc
      */
@@ -71,6 +80,51 @@ class SiteController extends Controller
     }
 
     /**
+     * @return string
+     * @author wusong
+     * @date 2018/1/3 10:52
+     * 免费页面
+     */
+    public function actionFree()
+    {
+        return $this->render('free');
+    }
+
+    /**
+     * @author wusong@bmtrip.com
+     * @date 2018/1/3 11:30
+     * 获取免费列表
+     */
+    public function actionGet_free_goods_list()
+    {
+        $limit = $_REQUEST['limit']?$_REQUEST['limit']:10;
+        $page = $_REQUEST['page']?$_REQUEST['page']:1;
+        // 搜索条件
+        $goods_title = isset($_REQUEST['goods_title'])?$_REQUEST['goods_title']:''; // 商品标题
+        $goods_plat = isset($_REQUEST['goods_plat'])?$_REQUEST['goods_plat']:'';    // 平台
+        $create_time = isset($_REQUEST['create_time'])?$_REQUEST['create_time']:''; // 创建时间
+        // 排序
+        $order = isset($_REQUEST['order'])?$_REQUEST['order']:'id DESC';
+        if($create_time){
+            $create_time_l = explode(' - ',$create_time)[0].' 00:00:00';
+            $create_time_r = explode(' - ',$create_time)[1].' 23:59:59';
+        }
+        $model = new YShiyong();
+        $query = $model->find()->where(1);
+        if($goods_title)$query->andwhere(['like', 'goods_title', $goods_title]);
+        if($goods_plat)$query->andwhere(['goods_plat'=>$goods_plat]);
+        if($create_time)$query->andwhere(['between', 'create_time', $create_time_l, $create_time_r]);
+        // 获取列表
+        $list = $query
+            ->limit($page*$limit)
+            ->offset(($page-1)*$limit)
+            ->orderBy($order)
+            ->all();
+        // 获取总数
+        $count = $query->count('id');
+        return \yii\helpers\Json::encode( array('code'=>0, 'message'=>'获取数据成功', 'data'=>$list, 'count'=>$count));
+    }
+    /**
      * 发送邮箱验证码
      * @date 2017-12-03
      * @author wusong
@@ -86,6 +140,9 @@ class SiteController extends Controller
         {
             return \yii\helpers\Json::encode( array('code'=>2,'message'=>'非法请求','data'=>array()));die;
         }
+        // 检测邮箱是否已经注册了
+        $userinfo = YUser::find()->where(['email'=>trim($param['email']),'deleted'=>0])->one();
+        if($userinfo)return \yii\helpers\Json::encode( array('code'=>4,'message'=>'该邮箱已经被注册','data'=>[]));
         // 发送邮箱验证码
         $mail = Yii::$app->helper->mail_code_send($param['email']);
         if($mail)
@@ -123,6 +180,7 @@ class SiteController extends Controller
         $model->password = md5($param['password']);
         try{
             $res = $model->save();
+            $this->recode_user_action('注册',$model->id); // 存储活动记录
             if($res)
                 return \yii\helpers\Json::encode(array('code'=>0,'message'=>'注册成功','data'=>[]));
             else
@@ -157,17 +215,61 @@ class SiteController extends Controller
         $query = YUser::find()
             ->asArray()
             ->select(['id','email'])
-            ->where(['email'=>$param['email'],'password'=>md5($param['password'])]);
+            ->where(['email'=>$param['email'],'password'=>md5($param['password']),'deleted'=>0]);
         $res = $query->one();
         if($res)
         {
             // 将用户信息保存到session
             Yii::$app->session->set('userinfo',$res);
+            $this->recode_user_action('登录');
+            // 更新最后登录IP地址
+            $model = YUser::findOne($res['id']);
+            $model->last_login_ip_address = ip2long(Yii::$app->helper->getIp())?ip2long(Yii::$app->helper->getIp()):0;
+            $model->last_login_time = date("Y-m-d H:i:s");
+            $model->save();
             return \yii\helpers\Json::encode(array('code'=>0,'message'=>'登录成功','data'=>$res));
         }else
         {
             return \yii\helpers\Json::encode(array('code'=>3,'message'=>'用户名或密码错误','data'=>[]));
         }
+    }
+
+    /**
+     * 退出登录操作
+     * @author wusong
+     * @date 2017-13-05
+     */
+    public function actionLogin_out()
+    {
+        // 获取用户session
+        $session = Yii::$app->session;
+        $userinfo = $session->has('userinfo') ? $session->get('userinfo') : '';
+        if($userinfo)
+        {
+            // 清除session
+            $this->recode_user_action('登出');
+            $session->remove('userinfo');
+        }
+        return $this->goHome();
+    }
+
+    /**
+     * 存储用户操作信息
+     * @author wusong
+     * @date 2017-12-05
+     * @action 操作类型
+     */
+    public function recode_user_action($action,$userid = '',$old_data='',$new_data='',$remark='')
+    {
+        $model = new YUserLog();
+        $model->createtime = date('Y-m-d H:i:s');   // 创建时间
+        $model->userid = $userid ? $userid : Yii::$app->session->get('userinfo')['id'];   // 用户id
+        $model->ip_address = ip2long(Yii::$app->helper->getIp())?ip2long(Yii::$app->helper->getIp()):0;  // ip地址
+        $model->action = $action;   // 用户操作类型
+        $model->old_data = $old_data;   // 旧数据
+        $model->new_data = $new_data;   // 新数据
+        $model->remark = $remark;   // 备注
+        return $model->save();
     }
     /**
      * Login action.
