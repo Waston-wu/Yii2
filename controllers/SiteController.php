@@ -87,9 +87,12 @@ class SiteController extends Controller
      */
     public function actionFree()
     {
-        return $this->render('free');
+        // 获取平台信息和商品类型
+        $model = new YShiyong();
+        $goods_plat = $model->find()->select('goods_plat')->groupBy('goods_plat')->asArray()->all();
+        $business_sale = $model->find()->select('business_sale')->groupBy('business_sale')->asArray()->all();
+        return $this->render('free',['goods_plat'=>$goods_plat, 'business_sale'=>$business_sale]);
     }
-
     /**
      * @author wusong@bmtrip.com
      * @date 2018/1/3 11:30
@@ -103,6 +106,9 @@ class SiteController extends Controller
         $goods_title = isset($_REQUEST['goods_title'])?$_REQUEST['goods_title']:''; // 商品标题
         $goods_plat = isset($_REQUEST['goods_plat'])?$_REQUEST['goods_plat']:'';    // 平台
         $create_time = isset($_REQUEST['create_time'])?$_REQUEST['create_time']:''; // 创建时间
+        $business_time = isset($_REQUEST['business_time'])?$_REQUEST['business_time']:''; // 是否上架
+        $business_sale = isset($_REQUEST['business_sale'])?$_REQUEST['business_sale']:''; // 商品类型
+
         // 排序
         $order = isset($_REQUEST['order'])?$_REQUEST['order']:'id DESC';
         if($create_time){
@@ -111,12 +117,18 @@ class SiteController extends Controller
         }
         $model = new YShiyong();
         $query = $model->find()->where(1);
-        if($goods_title)$query->andwhere(['like', 'goods_title', $goods_title]);
-        if($goods_plat)$query->andwhere(['goods_plat'=>$goods_plat]);
-        if($create_time)$query->andwhere(['between', 'create_time', $create_time_l, $create_time_r]);
+        if($goods_title)$query->andwhere(['like', 'goods_title', $goods_title]);    // 商品标题
+        if($goods_plat)$query->andwhere(['goods_plat'=>$goods_plat]);   // 商品平台
+        if($business_time === '0'){
+            $query->andwhere(['<','business_time',date('Y-m-d H:i:s')]);    // 是否上架
+        }else if($business_time === '1'){
+            $query->andwhere(['>=','business_time',date('Y-m-d H:i:s')]);
+        }
+        if($business_sale)$query->andwhere(['business_sale'=>$business_sale]);  // 商品类型
+        if($create_time)$query->andwhere(['between', 'create_time', $create_time_l, $create_time_r]);   // 创建时间
         // 获取列表
         $list = $query
-            ->limit($page*$limit)
+            ->limit($limit)
             ->offset(($page-1)*$limit)
             ->orderBy($order)
             ->all();
