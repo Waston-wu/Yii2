@@ -13,6 +13,11 @@ $this->context->layout = 'header'; //设置使用的布局文件
 $this->title = 'Welcome to YII2 - 免费';
 
 ?>
+<style>
+    td .layui-table-cell{
+        height:50px
+    }
+</style>
 <div style="margin:20px 30px;" ng-app="freeListApp" ng-controller="freeListCtrl" >
     <form class="layui-form">
         <div class="layui-inline">
@@ -84,22 +89,24 @@ $this->title = 'Welcome to YII2 - 免费';
             // 表格数据
             $scope.free_table = $scope.table.render({
                 elem: '#free_table'
-                ,height: 500
+                ,height: 700
                 ,url: 'index.php?r=site/get_free_goods_list' //数据接口
                 ,method: 'post'
                 ,page: true //开启分页
                 ,cols: [[ //表头
-                    {field: 'goods_id', title: '商品id', sort: true, fixed: 'left', width:80,
+                    {field: 'goods_id', title: '商品id', sort: true, width:80,
                         templet: '<div><a href="{{d.goods_link}}" target="_blank" class="layui-table-link">{{d.goods_id}}</a></div>'}
                     ,{field: 'goods_title', title: '标题', sort: true, width:300}
+                    ,{field: 'goods_image', title: '图片', sort: true, width:80, style: 'height:50px',
+                        templet: '<div style="height:180px;"><a href="{{d.goods_image}}" target="_blank"><img src="{{d.goods_image}}" height="50px"></div>'}
                     ,{field: 'goods_plat', title: '平台', sort: true, width:80, align:'center'}
-                    ,{field: 'goods_apply', title: '申请人数', sort: true, width:100, align:'center'}
-                    ,{field: 'goods_left', title: '剩余份数', sort: true, width:100, align:'center'}
-                    ,{field: 'goods_price', title: '商品价格', sort: true, width:100, align:'center'}
+                    ,{field: 'goods_apply', title: '申请数', sort: true, width:80, align:'center'}
+                    ,{field: 'goods_left', title: '剩余', sort: true, width:70, align:'center'}
+                    ,{field: 'goods_price', title: '价格', sort: true, width:90, align:'center'}
                     ,{field: 'business_time', title: '过期时间', sort: true, width:170}
                     ,{field: 'business_grade', title: '商家等级', sort: true}
                     ,{field: 'business_sale', title: '商品类型',sort: true}
-                    ,{field: 'business_sock', title: '商家评分', sort: true, width:100, align:'center'}
+                    ,{field: 'business_sock', title: '评分', sort: true, width:80, align:'center'}
                     ,{field: 'create_time', title: '创建时间', sort: true, templet: function(d){
                             return d.create_time.substr(0,16)
                         }
@@ -125,7 +132,7 @@ $this->title = 'Welcome to YII2 - 免费';
                         goods_title: $scope.goods_title,
                         goods_plat: $("#goods_plat").val(),
                         business_sale: $("#business_sale").val(),
-                        business_time: $("input[name=business_time]").val(),
+                        business_time: $("input[name='business_time']:checked").val(),
                         create_time: $("#create_time").val()
                     }
                 });
