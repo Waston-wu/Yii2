@@ -19,6 +19,8 @@ $this->title = 'Welcome to YII2 - 免费';
     }
 </style>
 <div style="margin:20px 30px;" ng-app="freeListApp" ng-controller="freeListCtrl" >
+    <h4><b>这个列表是用Python抓取<a href="http://www.shiyong.com" target="_blank">试用网</a>的免费试用列表的数据</b></h4>
+    <br>
     <form class="layui-form">
         <div class="layui-inline">
             <label class="layui-form-label">商品标题</label>
@@ -99,6 +101,10 @@ $this->title = 'Welcome to YII2 - 免费';
                     ,{field: 'goods_title', title: '标题', sort: true, width:300}
                     ,{field: 'goods_image', title: '图片', sort: true, width:80, style: 'height:50px',
                         templet: '<div style="height:180px;"><a href="{{d.goods_image}}" target="_blank"><img src="{{d.goods_image}}" height="50px"></div>'}
+                    ,{field: 'is_huabei', title: '花呗', sort: true, width:80, align:'center', templet: function(d){
+                            return d.is_huabei == '0'?'<i class="layui-icon" style="font-size: 30px; color: #FF5722;">&#x1006;</i>':'<i class="layui-icon" style="font-size: 30px; color: #1E9FFF;">&#xe605;</i>'
+                        }
+                    }
                     ,{field: 'goods_plat', title: '平台', sort: true, width:80, align:'center'}
                     ,{field: 'goods_apply', title: '申请数', sort: true, width:80, align:'center'}
                     ,{field: 'goods_left', title: '剩余', sort: true, width:70, align:'center'}
