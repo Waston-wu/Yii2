@@ -122,4 +122,12 @@ class Helper
         return $ip;
     }
 
+    // 获取随机字符串
+    function getRandomString($length = 10)
+    {
+        $str = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890qwertyuiopasdfghjklzxcvbnm";
+        str_shuffle($str);
+        $name = substr(str_shuffle($str), 0, $length);
+        return $name;
+    }
 }
