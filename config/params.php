@@ -14,4 +14,11 @@ return [
         'auth' => '1',
         'dbId' => 0
     ],
+    'rabbitmq' => [
+        'host' => '127.0.0.1',
+        'port' => '5672',
+        'user' => 'test',
+        'password' => '123456',
+        'vhost'=>'/'
+    ],
 ];
