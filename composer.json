@@ -22,6 +22,11 @@
         "elasticsearch/elasticsearch": "^6.0",
         "php-amqplib/php-amqplib": ">=2.6.1"
     },
+    "autoload": {
+        "psr-4": {
+            "Library\\": "app/library"
+        }
+    },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
         "yiisoft/yii2-gii": "~2.0.0",

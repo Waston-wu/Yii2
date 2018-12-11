@@ -17,6 +17,9 @@ $this->title = 'Welcome to YII2 - 免费';
     td .layui-table-cell{
         height:50px
     }
+    em{
+        color:red
+    }
 </style>
 <div style="margin:20px 30px;" ng-app="freeListApp" ng-controller="freeListCtrl" >
     <h4><b>这个列表是用Python抓取<a href="http://www.shiyong.com" target="_blank">试用网</a>的免费试用列表的数据</b></h4>

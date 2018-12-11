@@ -100,6 +100,7 @@ class SiteController extends Controller
      */
     public function actionGet_free_goods_list()
     {
+
         $limit = $_REQUEST['limit']?$_REQUEST['limit']:10;
         $page = $_REQUEST['page']?$_REQUEST['page']:1;
         // 搜索条件
@@ -108,6 +109,12 @@ class SiteController extends Controller
         $create_time = isset($_REQUEST['create_time'])?$_REQUEST['create_time']:''; // 创建时间
         $business_time = isset($_REQUEST['business_time'])?$_REQUEST['business_time']:''; // 是否上架
         $business_sale = isset($_REQUEST['business_sale'])?$_REQUEST['business_sale']:''; // 商品类型
+        $model = new YShiyong();
+        $order = isset($_REQUEST['order'])?$_REQUEST['order']:'id DESC';
+        list($list, $count) = $model->listGoods($goods_title, $goods_plat, $create_time, $business_time, $business_sale, $page, $limit, $order);
+        return \yii\helpers\Json::encode( array('code'=>0, 'message'=>'获取数据成功', 'data'=>$list, 'count'=>$count));
+
+
 
         // 排序
         $order = isset($_REQUEST['order'])?$_REQUEST['order']:'id DESC';
@@ -115,7 +122,6 @@ class SiteController extends Controller
             $create_time_l = explode(' - ',$create_time)[0].' 00:00:00';
             $create_time_r = explode(' - ',$create_time)[1].' 23:59:59';
         }
-        $model = new YShiyong();
         $query = $model->find()->where(1);
         if($goods_title)$query->andwhere(['like', 'goods_title', $goods_title]);    // 商品标题
         if($goods_plat)$query->andwhere(['goods_plat'=>$goods_plat]);   // 商品平台

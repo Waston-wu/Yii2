@@ -21,4 +21,8 @@ return [
         'password' => '123456',
         'vhost'=>'/'
     ],
+    'elasticsearch' => [
+        'host' => '127.0.0.1',
+        'port' => '9200',
+    ],
 ];
