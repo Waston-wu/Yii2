@@ -28,6 +28,8 @@ class YShiyong extends \yii\db\ActiveRecord
         'index' => 'free',
         'type' => 'list'
     ];
+    private $elastic = null;
+
     /**
      * @inheritdoc
      */
@@ -82,12 +84,15 @@ class YShiyong extends \yii\db\ActiveRecord
      */
     private function initElasticsearch()
     {
+        if($this->elastic !== null){
+            return $this->elastic;
+        }
         $config = \Yii::$app->params['elasticsearch'];
         $hots = [
             $config['host'] . ':' . $config['port']
         ];
-        $client = ClientBuilder::create()->setHosts($hots)->build();
-        return $client;
+        $this->elastic = ClientBuilder::create()->setHosts($hots)->build();
+        return $this->elastic;
     }
     /**
      * @author 伍松
