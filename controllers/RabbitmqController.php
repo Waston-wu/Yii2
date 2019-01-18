@@ -4,7 +4,9 @@ namespace app\controllers;
 
 use function foo\func;
 use PhpAmqpLib\Connection\AMQPConnection;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPTable;
 use Yii;
 use yii\db\Exception;
 use yii\filters\AccessControl;
@@ -31,7 +33,7 @@ class RabbitmqController extends Controller
         echo 'Welcome to RabbitMQ';
     }
 
-    // 生产者
+    // 生产者 - https://blog.csdn.net/u012119576/article/details/74677835
     public function actionCreate()
     {
         $config = \Yii::$app->params['rabbitmq'];
@@ -51,4 +53,78 @@ class RabbitmqController extends Controller
         var_export($channel);die;
     }
 
+
+    public function actionSend()
+    {
+        $config = \Yii::$app->params['rabbitmq'];
+        // 建立连接
+        $connection = new AMQPStreamConnection($config['host'], $config['port'], $config['user'], $config['password']);
+        $channel = $connection->channel();
+
+        //定义配置exchange queue routing-key名称
+        $expiration = 5 * 60 * 1000;
+        $delayExchangeName = 'delay-exchange' . $expiration;    // 延迟交换机
+        $delayQueueName = 'delay-queue' . $expiration;  // 延迟队列
+        $expireExchangeName = 'expire-exchange';    // 过期交换机
+        $expireRoutingKey = 'expire-routing-key';   // 过期路由：路由关键字，exchange根据这个关键字进行消息投递。
+        //定义延迟exchange
+        $channel->exchange_declare($delayExchangeName, 'direct', false, true, false);
+        //定义延迟队列
+        $tale = new AMQPTable();
+        $tale->set('x-dead-letter-exchange', $expireExchangeName);
+        $tale->set('x-dead-letter-routing-key', $expireRoutingKey);
+        $tale->set('x-message-ttl', $expiration);
+        $channel->queue_declare($delayQueueName, false, true, false, false, false, $tale);
+        // 绑定，它的作用就是把exchange和queue按照路由规则绑定起来。
+        $channel->queue_bind($delayQueueName, $delayExchangeName, '');
+        //生产消息
+        $msg = json_encode(['orderId' => 'testId']);
+        $sendMsg = new AMQPMessage($msg, array(
+            /**
+             * https://www.cnblogs.com/linkenpark/p/5393666.html
+             * 通过设置Exchange和MessageQueue的durable属性为true，
+             * 可以使得队列和Exchange持久化，但是这还不能使得队列中的消息持久化，
+             * 这需要生产者在发送消息的时候，将delivery mode设置为2，
+             * 只有这3个全部设置完成后，才能保证服务器重启不会对现有的队列造成影响。
+             * 这里需要注意的是，只有durable为true的Exchange和durable为ture的Queues才能绑定，
+             * 否则在绑定时，RabbitMQ都会抛错的。持久化会对RabbitMQ的性能造成比较大的影响，可能会下降10倍不止
+             */
+            'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
+        ));
+        $channel->basic_publish($sendMsg, $delayExchangeName, '');
+        //关闭连接
+        $channel->close();
+        $connection->close();
+    }
+
+    public function actionReceive()
+    {
+        set_time_limit(0);
+        $config = \Yii::$app->params['rabbitmq'];
+        // 建立连接
+        $connection = new AMQPStreamConnection($config['host'], $config['port'], $config['user'], $config['password']);
+        $channel = $connection->channel();
+
+        //定义配置exchange queue routing-key名称
+        $expireExchangeName = 'expire-exchange';
+        $expireQueueName = 'expire-queue';
+        $expireRoutingKey = 'expire-routing-key';
+        //定义exchange
+        $channel->exchange_declare($expireExchangeName, 'direct', false, true, false);
+        //定义queue
+        $channel->queue_declare($expireQueueName, false, true, false, false, false);
+        $channel->queue_bind($expireQueueName, $expireExchangeName, $expireRoutingKey);
+        //消费消息的回调方法
+        $callback = function ($msg) {
+            echo json_encode($msg);
+        };
+        //只有consumer已经处理并确认了上一条message时queue才分派新的message给它
+        $channel->basic_qos(null, 1, null);
+        //消费消息
+        $channel->basic_consume($expireQueueName, '', false, false, false, false, $callback);
+        while (count($channel->callbacks)) {
+            $channel->wait();
+        }
+        $channel->close();
+    }
 }
